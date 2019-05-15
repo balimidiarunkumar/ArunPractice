@@ -1,0 +1,165 @@
+﻿
+@{
+    ViewBag.Title = "AddTimeSheet";
+}
+
+<h2>Add Time Sheet</h2>
+<div class="container" ng-app="PracticeApp">
+    <div class="row" ng-controller="PracticeController" ng-init="loadData('@ViewBag.Role','@ViewBag.Userid')">
+        <div class="row">
+            <div class="col-md-24 col-xs-24">
+                @*<div class="text-center">
+                        <h3>
+                            <b style="color: black;">Add Time Sheet Details</b>
+                        </h3>
+                    </div>*@
+                <div class="row">
+                    <div class="col-md-22 col-md-offset-1 col-xs-22 col-xs-offset-1">
+                        @if (!string.IsNullOrEmpty(@ViewBag.errorMessage))
+                        {
+                            <div class="alert alert-danger alert-dismissible" style="margin-bottom: 0px; margin-top: 5px;">
+                                <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                                <strong>@ViewBag.errorMessage</strong>
+                            </div>
+                        }
+                        else if (!string.IsNullOrEmpty(@ViewBag.successMessage))
+                        {
+                            <div class="alert alert-success alert-dismissible" style="margin-bottom: 0px; margin-top: 5px;">
+                                <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                                <strong>@ViewBag.successMessage</strong>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-24 col-xs-24 pull-right">
+                <a href="~/Home/TimeSheetDetails" name="panelName" class="btn btn-primary pull-left" style="width: 100px;">Back</a>
+            </div>
+        </div>
+        <div class="row">
+
+            <div class="col-md-24 col-xs-24">
+                <div id="loader_channel_dashboard" class="lds-dual-ring"></div>
+                <div class="form-group">
+                    <input type="date" ng-model="area.Date" maxlength="10" class="form-control datepicker" />
+                </div>
+                <div class="form-group">
+                    <input type="text" ng-model="area.HoursWorked" onkeypress="return isNumber(event)" class="form-control" />
+                </div>
+                <div class="form-group">
+                    @Html.DropDownList("ManagerID", ViewBag.ManagerList as SelectList, "", new { id = "ManagerID", @class = "form-control wardwidth" })
+                </div>
+                <div class="form-group">
+                    <input type="button" value="Submit" ng-click="AddPractice(area)" class="btn btn-primary" />
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts{
+    <script type="text/javascript">
+        $(function () { // will trigger when the document is ready
+            //$('.datepicker').datepicker(); //Initialise any date pickers
+            $('.datepicker').datepicker({
+                format: 'dd/mm/yyyy',
+                startDate: '-3d'
+            });
+        });
+    </script>
+    <script>
+
+        function isNumber(evt) {
+            evt = (evt) ? evt : window.event;
+            var charCode = (evt.which) ? evt.which : evt.keyCode;
+            if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+                return false;
+            }
+            return true;
+        }
+
+
+    </script>
+    <script>
+        var myApp = angular.module('PracticeApp', []);
+        myApp.controller('PracticeController', ['$scope', '$rootScope', 'webServices', function ($scope, $rootScope, webServices) {
+            $scope.data = {
+                area: [], isEditmode: false
+            };
+
+            $scope.loadData = function (Role, Userid) {
+                $('#loader_channel_dashboard').show();
+                $scope.data.Role = Role;
+                $scope.data.Userid = Userid;
+                webServices.getPractice(Role, Userid).then(function (response) {
+                    if (response.data) {
+                        //$scope.data.Practice = response.data.Table;
+                        $('#loader_channel_dashboard').hide();
+                    }
+                });
+            };
+
+            $scope.AddPractice = function (area) {
+                //alert($("#ManagerID").val());
+                if (!$("#ManagerID").val() ||
+                    !area ||
+                    !area.Date ||
+                    !area.HoursWorked) {
+                    var f = false;
+                }
+
+                if (f == false) {
+                    alert("Please enter all fields.");
+                    return;
+                } else {
+                    $('#loader_channel_dashboard').show();
+                    $scope.area.ManagerID = $("#ManagerID").val();
+                    webServices.AddPractice($scope.area).then(function (response) {
+                        if (response.data.status === "1" || response.data.status === 1) {
+                            //$scope.data.Practice = responsedata.data.Table;
+                            $scope.area = {};
+                            $("#ManagerID").val('');
+                            $('#loader_channel_dashboard').hide();
+                            alert("Data inserted successfully");
+                        } else {
+                            alert(response.data.errorMessage);
+                            $('#loader_channel_dashboard').hide();
+                        }
+                    });
+                }
+            };
+
+        }]);
+
+        myApp.factory("webServices", ['$http', function ($http) {
+
+            var fact = { baseUrl: "/" };
+
+            fact.getPractice = function (Role, Userid) {
+                return $http({
+                    url: fact.baseUrl + 'Home/GetPractice',
+                    method: 'POST',
+                    data: { Role: Role, Userid: Userid },
+                    headers: { 'content-type': 'application/json' }
+                });
+            };
+
+            fact.AddPractice = function (area) {
+                return $http({
+                    url: fact.baseUrl + 'Home/AddPractice',
+                    method: 'POST',
+                    data: area,
+                    headers: { 'content-type': 'application/json' }
+                });
+            };
+
+            return fact;
+        }]);
+    </script>
+}
+

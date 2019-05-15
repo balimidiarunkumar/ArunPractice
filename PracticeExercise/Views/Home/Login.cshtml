@@ -1,0 +1,46 @@
+﻿@model PracticeExercise.Models.LoginViewModel
+@{
+    ViewBag.Title = "Login";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Login</title>
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+</head>
+<body>
+    <h2>Login</h2>
+    <div class="jumbotron">
+        <div class="row">
+            <div class="col-md-12">
+                @using (Html.BeginForm("Login", "Home", FormMethod.Post, new { @class = "login-form" }))
+                {
+                    <div class="form-group">
+                        @Html.TextBoxFor(m => m.UserId, new { placeholder = "Username", @class = "form-control" })
+                        @Html.ValidationMessageFor(m => m.UserId)
+                    </div>
+                    <div class="form-group">
+                        @Html.PasswordFor(m => m.Password, new { placeholder = "Password", @class = "form-control" })
+                        @Html.ValidationMessageFor(m => m.Password)
+                    </div>
+                    <input type="submit" class="btn btn-primary btn-block" name="Login" value="Login" />
+                    if (!string.IsNullOrEmpty(@ViewBag.errorMessage))
+                    {
+                        <div class="alert alert-danger alert-dismissible" style="margin-bottom: 0px;margin-top: 15px;">
+                            <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                            <strong>@ViewBag.errorMessage</strong>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/bootstrap")
+</body>
+</html>
+
